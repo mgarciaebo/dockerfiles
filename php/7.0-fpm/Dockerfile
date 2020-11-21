@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
   zip \
   procps \
   sudo \
+  wget \
   && rm -rf /var/lib/apt/lists/*
 
 RUN docker-php-ext-configure \
@@ -32,22 +33,29 @@ RUN docker-php-ext-install \
   pdo_mysql \
   soap \
   xsl \
-  zip
+  zip \
+  sockets
 
-RUN pecl channel-update pecl.php.net \
-  && pecl install xdebug \
-  && docker-php-ext-enable xdebug \
-  && sed -i -e 's/^zend_extension/\;zend_extension/g' /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+#RUN pecl channel-update pecl.php.net \
+#  && pecl install xdebug \
+#  && docker-php-ext-enable xdebug \
+#  && sed -i -e 's/^zend_extension/\;zend_extension/g' /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
 RUN curl -sS https://getcomposer.org/installer | \
   php -- --install-dir=/usr/local/bin --filename=composer
+
+# install magerun2
+RUN wget https://files.magerun.net/n98-magerun2-3.2.0.phar \
+    && mv n98-magerun2-3.2.0.phar n98-magerun2.phar \
+    && chmod +x ./n98-magerun2.phar \
+    && mv ./n98-magerun2.phar /usr/local/bin/n98-magerun2
 
 RUN groupadd -g 1000 app \
  && useradd -g 1000 -u 1000 -d /var/www -s /bin/bash app
 
 COPY conf/www.conf /usr/local/etc/php-fpm.d/
 COPY conf/php.ini /usr/local/etc/php/
-COPY conf/xdebug.ini /usr/local/etc/php/conf.d/
+#COPY conf/xdebug.ini /usr/local/etc/php/conf.d/
 COPY conf/php-fpm.conf /usr/local/etc/
 
 RUN mkdir /sock

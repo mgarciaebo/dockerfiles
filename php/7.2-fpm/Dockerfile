@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   procps \
   sudo \
   openssh-client \
+  wget \
   && rm -rf /var/lib/apt/lists/*
 
 RUN docker-php-ext-configure \
@@ -63,6 +64,11 @@ RUN EXPECTED_SIGNATURE="$(curl -s https://composer.github.io/installer.sig)" \
     && ( if [ "$EXPECTED_SIGNATURE" != "$ACTUAL_SIGNATURE" ]; then >&2 echo 'ERROR: Invalid installer signature'; rm composer-setup.php; exit 1; fi ) \
     && php composer-setup.php --install-dir /usr/local/bin --filename=composer \
     && php -r "unlink('composer-setup.php');"
+
+# legacy version
+RUN wget https://files.magerun.net/n98-magerun2-3.2.0.phar \
+    && chmod +x ./n98-magerun2-3.2.0.phar \
+    && mv ./n98-magerun2-3.2.0.phar /usr/local/bin/n98-magerun2
 
 RUN groupadd -g 1000 app \
  && useradd -g 1000 -u 1000 -d /var/www -s /bin/bash app
