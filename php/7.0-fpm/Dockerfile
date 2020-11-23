@@ -41,8 +41,14 @@ RUN docker-php-ext-install \
 #  && docker-php-ext-enable xdebug \
 #  && sed -i -e 's/^zend_extension/\;zend_extension/g' /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
-RUN curl -sS https://getcomposer.org/installer | \
-  php -- --install-dir=/usr/local/bin --filename=composer
+# install composer 1.10.16 with prestissimo
+RUN curl -sS https://getcomposer.org/installer | php -- \
+        --install-dir=/usr/local/bin \
+        --filename=composer --version=1.10.16 && \
+        composer global require --optimize-autoloader \
+        "hirak/prestissimo" && \
+        composer global dumpautoload --optimize && \
+        composer clear-cache
 
 # install magerun2
 RUN wget https://files.magerun.net/n98-magerun2-3.2.0.phar \
