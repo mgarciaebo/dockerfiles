@@ -62,13 +62,14 @@ RUN pecl channel-update pecl.php.net \
   && docker-php-ext-enable xdebug \
   && sed -i -e 's/^zend_extension/\;zend_extension/g' /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
-# install composer
-RUN EXPECTED_SIGNATURE="$(curl -s https://composer.github.io/installer.sig)" \
-    && php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
-    && ACTUAL_SIGNATURE="$(php -r "echo hash_file('sha384', 'composer-setup.php');")" \
-    && ( if [ "$EXPECTED_SIGNATURE" != "$ACTUAL_SIGNATURE" ]; then >&2 echo 'ERROR: Invalid installer signature'; rm composer-setup.php; exit 1; fi ) \
-    && php composer-setup.php --install-dir /usr/local/bin --filename=composer --version=1.10.16 \
-    && php -r "unlink('composer-setup.php');"
+# install composer 1.10.16 with prestissimo
+RUN curl -sS https://getcomposer.org/installer | php -- \
+        --install-dir=/usr/local/bin \
+        --filename=composer --version=1.10.16 && \
+        composer global require --optimize-autoloader \
+        "hirak/prestissimo" && \
+        composer global dumpautoload --optimize && \
+        composer clear-cache
 
 # install magerun2
 RUN wget https://files.magerun.net/n98-magerun2.phar \
